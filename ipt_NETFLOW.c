@@ -1944,7 +1944,7 @@ static struct ctl_path netflow_sysctl_path[] = {
 #  endif
 	},
 	{ .procname = "netflow" },
-	{ }
+	{ .procname = NULL }
 };
 # endif
 #endif /* 2.6.25 */
@@ -5629,7 +5629,7 @@ static int __init ipt_netflow_init(void)
 	}
 	if (hashsize < LOCK_COUNT)
 		hashsize = LOCK_COUNT;
-	printk(KERN_INFO "ipt_NETFLOW: hashsize %u (%luK)\n", hashsize,
+	printk(KERN_INFO "ipt_NETFLOW: hashsize %u (%uK)\n", hashsize,
 		hashsize * sizeof(struct hlist_head) / 1024);
 
 	htable_size = hashsize;
@@ -5681,7 +5681,14 @@ static int __init ipt_netflow_init(void)
 						      );
 #else /* 2.6.25 */
 # ifdef HAVE_REGISTER_SYSCTL_PATHS
+	/* Try the modern path-based registration first; if it returns NULL,
+	 * fall back to the older register_sysctl API. Some kernels or
+	 * distributions may expose different registration helpers and may
+	 * reject the table for reasons that register_sysctl accepts. */
 	netflow_sysctl_header = register_sysctl_paths(netflow_sysctl_path, netflow_sysctl_table);
+	if (!netflow_sysctl_header) {
+		netflow_sysctl_header = register_sysctl("net/netflow", netflow_sysctl_table);
+	}
 # else
 	netflow_sysctl_header = register_sysctl("net/netflow", netflow_sysctl_table);
 # endif
