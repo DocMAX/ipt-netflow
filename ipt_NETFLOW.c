@@ -5622,7 +5622,7 @@ static int __init ipt_netflow_init(void)
 	if (hashsize < LOCK_COUNT)
 		hashsize = LOCK_COUNT;
 	printk(KERN_INFO "ipt_NETFLOW: hashsize %u (%luK)\n", hashsize,
-		hashsize * sizeof(struct hlist_head) / 1024);
+		(unsigned long)(hashsize * sizeof(struct hlist_head) / 1024));
 
 	htable_size = hashsize;
 	htable = alloc_hashtable(htable_size);
